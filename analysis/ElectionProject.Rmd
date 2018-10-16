@@ -1,0 +1,99 @@
+---
+title: "ElectionProject"
+author: "Mahesh Acharya"
+date: "2018-10-15"
+output: workflowr::wflow_html
+---
+
+## Introduction
+
+```{r}
+
+```
+
+I want to know what two plus two equals? 2+2=`r 2+2`
+
+
+
+Next, I am going to load the necessary libraries.
+```{r, error=FALSE, warning=FALSE, message=FALSE, cache=FALSE}
+
+library(tidyverse)
+library(rvest)
+library(ggrepel)
+```
+```{r, error=FALSE, warning=FALSE, message=FALSE,echo=FALSE}
+URL2 <- "https://en.wikipedia.org/wiki/United_States_presidential_election,_2016"
+
+election <- read_html(URL2) %>% html_nodes(xpath = '//*[@id="mw-content-text"]/div/div[37]/table') %>% html_table(fill = TRUE)
+pelect <- election[[1]]
+
+names(pelect)[1]<-"State"
+names(pelect)[2]<-"Junk2"
+names(pelect)[3]<-"Hillary"
+names(pelect)[4]<-"Junk4"
+names(pelect)[5]<-"Junk5"
+names(pelect)[6]<-"Donald"
+names(pelect)[7]<- "Junk7"
+names(pelect)[8]<- "Junk8"
+names(pelect)[9]<- "Junk9"
+names(pelect)[10]<-"Junk10"
+names(pelect)[11]<-"Junk11"
+names(pelect)[12]<-"Junk12"
+names(pelect)[13]<-"Junk13"
+names(pelect)[14]<-"Junk14"
+names(pelect)[15]<-"Junk15"
+names(pelect)[16]<-"Junk16"
+names(pelect)[17]<-"Junk17"
+names(pelect)[18]<-"Junk18"
+names(pelect)[19]<-"Junk19"
+names(pelect)[20]<-"Junk20"
+names(pelect)[21]<-"Junk21"
+names(pelect)[22]<-"Junk22"
+names(pelect)[23]<-"Junk23"
+names(pelect)[24]<-"Junk24"
+names(pelect)[25]<-"Junk25"
+
+pelect <- as.tibble(pelect) %>%
+  select(State, Hillary, Donald) %>%
+  slice(-c(1,10,22,23,32,33,34,58)) %>%
+  mutate(Clinton=parse_number(Hillary, na=character()),
+         Trump=parse_number(Donald, na=character()),
+         PercentDem=((Clinton/(Clinton+Trump))*100),
+         State=replace(State, State=="Maine (at-lg)", "Maine"),
+         State=replace(State, State=="Nebraska (at-lg)", "Nebraska")) %>%
+  select(State,PercentDem)
+
+###Visualizing Election Data
+
+qplot(PercentDem,State,data=pelect)
+```
+
+This is a quick plot
+
+```{r, error=FALSE, warning=FALSE, message=FALSE,echo= FALSE, cache=FALSE}
+
+pelect <- mutate(pelect, State2=state.abb)
+
+g1 <- ggplot(pelect, aes(x=State2, y=PercentDem)) +
+  geom_bar(stat="identity")
+
+g2 <- g1 +
+  ylab("Clinton's 2016 Percentage of the Two-Party Vote") +
+  xlab("State")+
+  ggtitle("2016 Presidential Election Results By State")+
+  theme(plot.title = element_text(hjust = 0.5))
+
+g2
+
+g3 <- ggplot(pelect, aes(x=reorder(State2,PercentDem), y=PercentDem)) +
+  geom_bar(stat="identity")
+
+g4 <- g3 +
+  ylab("Clinton's 2016 Percentage of the Two-Party Vote") +
+  xlab("State")+
+  ggtitle("2016 Presidential Election Results By State")+
+  theme(plot.title = element_text(hjust = 0.5))
+
+g4
+```
